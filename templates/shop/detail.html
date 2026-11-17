@@ -1,0 +1,128 @@
+{% extends "layout.html" %}
+{% from "partials/icons.html" import icon, product_image, stars %}
+{% from "partials/product_card.html" import product_card %}
+{% block title %}{{ product['name'] }} · ByteBodega{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{{ url_for('shop.home') }}">Home</a>
+  {{ icon('chevron-right', 13) }}
+  <a href="{{ url_for('shop.products') }}">Shop</a>
+  {% if product['category_name'] %}
+    {{ icon('chevron-right', 13) }}
+    <a href="{{ url_for('shop.products', category=product['category_slug']) }}">{{ product['category_name'] }}</a>
+  {% endif %}
+  {{ icon('chevron-right', 13) }}<span>{{ product['name'] }}</span>
+</nav>
+
+<section class="detail-layout">
+  <div class="detail-media">
+    {{ product_image(product['image'], product['name'], 'detail-img') }}
+    {% if product['badge'] %}<span class="chip chip--accent detail-chip">{{ product['badge'] }}</span>{% endif %}
+  </div>
+
+  <div class="detail-info">
+    <div class="detail-tags">
+      {% if product['category_name'] %}
+      <a class="pill pill--soft" href="{{ url_for('shop.products', category=product['category_slug']) }}">
+        {{ product['category_name'] }}
+      </a>
+      {% endif %}
+      {% if product['stock'] > 5 %}
+        <span class="pill pill--ok">{{ icon('check', 13) }} In stock</span>
+      {% elif product['stock'] > 0 %}
+        <span class="pill pill--warn">Only {{ product['stock'] }} left</span>
+      {% else %}
+        <span class="pill pill--danger">Out of stock</span>
+      {% endif %}
+    </div>
+
+    <h1>{{ product['name'] }}</h1>
+    <div class="detail-rating">
+      {{ stars(product['rating'], product['rating_count']) }}
+      <span class="muted">· {{ product['rating_count'] }} verified reviews</span>
+    </div>
+
+    <p class="detail-price">{{ product['price']|money }}</p>
+    <p class="detail-desc">{{ product['description'] }}</p>
+
+    <form class="detail-buy" method="post" action="{{ url_for('cart.add_to_cart', product_id=product['id']) }}">
+      <input type="hidden" name="next" value="{{ request.path }}">
+      <div class="qty-stepper" data-stepper>
+        <button type="button" class="qty-btn" data-step="-1" aria-label="Decrease quantity">{{ icon('minus', 15) }}</button>
+        <input class="qty-input" type="number" name="quantity" value="1" min="1" max="{{ product['stock'] }}"
+               aria-label="Quantity" {{ 'disabled' if product['stock'] == 0 }}>
+        <button type="button" class="qty-btn" data-step="1" aria-label="Increase quantity">{{ icon('plus', 15) }}</button>
+      </div>
+      <button type="submit" class="btn btn--primary btn--lg" {{ 'disabled' if product['stock'] == 0 }}>
+        {{ icon('cart', 17) }} Add to cart
+      </button>
+    </form>
+
+    <form method="post" action="{{ url_for('cart.toggle_wishlist', product_id=product['id']) }}">
+      <input type="hidden" name="next" value="{{ request.path }}">
+      <button type="submit" class="btn btn--outline btn--block">
+        {{ icon('heart', 17) }} {{ 'Saved to wishlist' if product['id'] in wishlist else 'Add to wishlist' }}
+      </button>
+    </form>
+
+    <dl class="detail-meta">
+      <div><dt>Availability</dt><dd>{{ product['stock'] }} unit{{ '' if product['stock'] == 1 else 's' }} ready to ship</dd></div>
+      <div><dt>Department</dt><dd>{{ product['category_name'] or 'Uncategorised' }}</dd></div>
+      <div><dt>SKU</dt><dd>NV-{{ '%05d' % product['id'] }}</dd></div>
+      <div><dt>Delivery</dt><dd>1–2 days Metro Manila · 3–5 days provincial</dd></div>
+      <div><dt>Payment</dt><dd>Cash on Delivery · GCash</dd></div>
+    </dl>
+
+    <div class="detail-assurance">
+      <div>{{ icon('truck', 18) }}<span><strong>Free shipping</strong><small>Orders over ₱2,500</small></span></div>
+      <div>{{ icon('shield', 18) }}<span><strong>Secure checkout</strong><small>Hashed passwords</small></span></div>
+      <div>{{ icon('refresh', 18) }}<span><strong>Easy returns</strong><small>Within 7 days</small></span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">Ratings</p>
+      <h2>What customers say</h2>
+    </div>
+  </div>
+  <div class="reviews">
+    <div class="review-score">
+      <strong>{{ '%.1f' % product['rating'] }}</strong>
+      {{ stars(product['rating']) }}
+      <span class="muted">{{ product['rating_count'] }} reviews</span>
+    </div>
+    <div class="review-bars">
+      {% for row in rating_breakdown %}
+      <div class="review-bar">
+        <span>{{ row['star'] }} ★</span>
+        <div class="bar"><i style="width: {{ row['percent'] }}%"></i></div>
+        <span class="muted">{{ row['percent'] }}%</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% if related %}
+<section class="section">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">You may also like</p>
+      <h2>More from {{ product['category_name'] }}</h2>
+    </div>
+    <a class="link-arrow" href="{{ url_for('shop.products', category=product['category_slug']) }}">
+      View department {{ icon('chevron-right', 15) }}
+    </a>
+  </div>
+  <div class="product-grid product-grid--four">
+    {% for item in related %}
+      {{ product_card(item, wishlist) }}
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}

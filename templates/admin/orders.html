@@ -1,0 +1,84 @@
+{% extends "admin/base.html" %}
+{% from "partials/icons.html" import icon %}
+{% block title %}Orders · ByteBodega Admin{% endblock %}
+{% block heading %}<h1>Order management</h1>{% endblock %}
+
+{% block content %}
+<nav class="tab-bar" aria-label="Filter orders">
+  <a class="tab {{ 'is-active' if not status }}" href="{{ url_for('admin.orders') }}">All <span class="tab-count">{{ all_count }}</span></a>
+  {% for key, label in status_labels.items() %}
+  <a class="tab {{ 'is-active' if status == key }}" href="{{ url_for('admin.orders', status=key) }}">
+    {{ label }} <span class="tab-count">{{ counts[key] }}</span>
+  </a>
+  {% endfor %}
+</nav>
+
+<form class="filter-bar filter-bar--admin" method="get" action="{{ url_for('admin.orders') }}">
+  {% if status %}<input type="hidden" name="status" value="{{ status }}">{% endif %}
+  <div class="filter-search">
+    {{ icon('search', 17) }}
+    <input type="search" name="q" value="{{ query }}" placeholder="Order number, customer name or username" aria-label="Search orders">
+  </div>
+  <button type="submit" class="btn btn--primary">{{ icon('filter', 16) }} Search</button>
+  <a class="btn btn--ghost" href="{{ url_for('admin.orders') }}">Reset</a>
+</form>
+
+<section class="panel">
+  <header class="panel-head">
+    <h2>{{ pager['total'] }} order{{ '' if pager['total'] == 1 else 's' }}</h2>
+    <span class="muted">Newest first</span>
+  </header>
+
+  {% if orders %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th>Order</th><th>Customer</th><th>Date</th><th>Items</th><th>Payment</th><th>Total</th><th>Status</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for order in orders %}
+        <tr>
+          <td><strong>{{ order['order_number'] }}</strong></td>
+          <td>
+            <div class="table-stack">
+              <span>{{ order['full_name'] }}</span>
+              <small>@{{ order['username'] }}</small>
+            </div>
+          </td>
+          <td>{{ order['created_at']|datetime_ph }}</td>
+          <td>{{ order['city'] }}</td>
+          <td>{{ 'GCash' if order['payment_method'] == 'gcash' else 'COD' }}</td>
+          <td>{{ order['total']|money }}</td>
+          <td><span class="status status--{{ order['status'] }}">{{ status_labels[order['status']] }}</span></td>
+          <td>
+            <a class="btn btn--ghost btn--sm" href="{{ url_for('admin.order_detail', order_id=order['id']) }}">
+              Manage {{ icon('chevron-right', 13) }}
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if pager['pages'] > 1 %}
+  <nav class="pagination" aria-label="Pagination">
+    {% if pager['has_prev'] %}
+    <a class="page-btn" href="{{ url_for('admin.orders', status=status, q=query, page=pager['page'] - 1) }}">Previous</a>
+    {% endif %}
+    <span class="page-num is-active">{{ pager['page'] }} / {{ pager['pages'] }}</span>
+    {% if pager['has_next'] %}
+    <a class="page-btn" href="{{ url_for('admin.orders', status=status, q=query, page=pager['page'] + 1) }}">Next</a>
+    {% endif %}
+  </nav>
+  {% endif %}
+
+  {% else %}
+  <div class="empty-state empty-state--compact">
+    <span class="empty-icon">{{ icon('receipt', 24) }}</span>
+    <h2>No orders here</h2>
+    <p>Orders placed in the storefront will appear in this queue.</p>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

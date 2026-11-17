@@ -1,0 +1,64 @@
+{% from "partials/icons.html" import icon %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Welcome · ByteBodega{% endblock %}</title>
+  <link rel="icon" href="{{ url_for('static', filename='img/favicon.svg') }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="auth-body">
+<div class="auth-shell">
+  <section class="auth-visual">
+    <a class="brand brand--light" href="{{ url_for('shop.home') }}">
+      <span class="brand-mark">B</span>
+      <span class="brand-text"><strong>ByteBodega</strong><small>Gadget shop</small></span>
+    </a>
+
+    <div class="auth-visual-copy">
+      <p class="eyebrow eyebrow--light">Gadgets for IT students</p>
+      <h1>Tech that keeps up with your coursework.</h1>
+      <p class="auth-lede">
+        Laptops, monitors, peripherals, fast storage and dev boards picked for IT
+        students — peso pricing, real stock and delivery across the country.
+      </p>
+      <ul class="auth-points">
+        <li>{{ icon('check', 16) }} Free shipping on orders over ₱2,500</li>
+        <li>{{ icon('check', 16) }} Cash on Delivery and GCash supported</li>
+        <li>{{ icon('check', 16) }} Student-budget picks from ₱499</li>
+      </ul>
+    </div>
+
+    <div class="auth-visual-stats">
+      <div><strong>34</strong><span>Products</span></div>
+      <div><strong>7</strong><span>Categories</span></div>
+      <div><strong>4.6★</strong><span>Average rating</span></div>
+    </div>
+  </section>
+
+  <section class="auth-panel">
+    <div class="auth-panel-inner">
+      {% block form %}{% endblock %}
+    </div>
+    <p class="auth-footnote">Demo accounts — customer: <code>juan / Juan@1234</code> · admin: <code>admin / Admin@123</code></p>
+  </section>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="toast-stack" aria-live="polite">
+    {% for category, message in messages %}
+    <div class="toast toast--{{ category }}">
+      <span class="toast-icon">{{ icon('check' if category == 'success' else ('alert' if category == 'error' else 'bell'), 17) }}</span>
+      <p>{{ message }}</p>
+      <button type="button" class="toast-close" data-dismiss aria-label="Dismiss">{{ icon('close', 14) }}</button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+{% endwith %}
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

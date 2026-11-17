@@ -1,0 +1,57 @@
+{% extends "layout.html" %}
+{% from "partials/icons.html" import icon, product_image, stars %}
+{% block title %}Wishlist · ByteBodega{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Your wishlist</h1>
+    <p class="page-sub">{{ items|length }} saved product{{ '' if items|length == 1 else 's' }}</p>
+  </div>
+  <a class="btn btn--ghost" href="{{ url_for('shop.products') }}">{{ icon('chevreft', 15) }} Continue shopping</a>
+</div>
+
+{% if items %}
+<div class="wishlist-grid">
+  {% for item in items %}
+  <article class="wishlist-card">
+    <a class="wishlist-thumb" href="{{ url_for('shop.product_detail', slug=item['slug']) }}">
+      {{ product_image(item['image'], item['name']) }}
+    </a>
+    <div class="wishlist-body">
+      <span class="product-category">{{ item['category_name'] }}</span>
+      <h3><a href="{{ url_for('shop.product_detail', slug=item['slug']) }}">{{ item['name'] }}</a></h3>
+      {{ stars(item['rating'], item['rating_count']) }}
+      <div class="product-price-row">
+        <span class="price">{{ item['price']|money }}</span>
+        <span class="stock-note {{ 'is-low' if item['stock'] <= 5 else '' }}">{{ item['stock'] }} in stock</span>
+      </div>
+      <div class="wishlist-actions">
+        <form method="post" action="{{ url_for('cart.wishlist_to_cart', product_id=item['id']) }}">
+          <button type="submit" class="btn btn--primary btn--sm btn--block" {{ 'disabled' if item['stock'] == 0 }}>
+            {{ icon('cart', 15) }} Move to cart
+          </button>
+        </form>
+        <div class="wishlist-actions-row">
+          <a class="btn btn--ghost btn--sm" href="{{ url_for('shop.product_detail', slug=item['slug']) }}">Details</a>
+          <form method="post" action="{{ url_for('cart.toggle_wishlist', product_id=item['id']) }}">
+            <input type="hidden" name="next" value="{{ request.path }}">
+            <button type="submit" class="btn btn--ghost btn--sm">{{ icon('trash', 14) }} Remove</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <span class="empty-icon">{{ icon('heart', 26) }}</span>
+  <h2>Nothing saved yet</h2>
+  <p>Tap the heart on any product to keep it here for later.</p>
+  <div class="empty-actions">
+    <a class="btn btn--primary" href="{{ url_for('shop.products') }}">Browse products</a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "layout.html" %}
+{% from "partials/icons.html" import icon %}
+{% block title %}Notifications · ByteBodega{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Notifications</h1>
+    <p class="page-sub">{{ items|selectattr('is_read', 'equalto', 0)|list|length }} unread of {{ items|length }}</p>
+  </div>
+  {% if items %}
+  <form method="post" action="{{ url_for('notifications.mark_all_read') }}">
+    <button type="submit" class="btn btn--ghost">{{ icon('check', 15) }} Mark all as read</button>
+  </form>
+  {% endif %}
+</div>
+
+{% if items %}
+<div class="notification-list">
+  {% for item in items %}
+  <article class="notification {{ 'is-unread' if not item['is_read'] }}">
+    <span class="notification-icon">{{ icon('bell' if not item['is_read'] else 'check', 18) }}</span>
+    <div class="notification-body">
+      <div class="notification-head">
+        <h2>{{ item['title'] }}</h2>
+        <span class="muted">{{ item['created_at']|datetime_ph }}</span>
+      </div>
+      <p>{{ item['message'] }}</p>
+      <div class="notification-actions">
+        {% if item['link'] %}
+        <form method="post" action="{{ url_for('notifications.mark_read', notification_id=item['id']) }}">
+          <input type="hidden" name="next" value="{{ item['link'] }}">
+          <button type="submit" class="link-arrow">
+            {{ 'Open order' if '/orders/' in item['link'] else 'Open' }} {{ icon('chevron-right', 14) }}
+          </button>
+        </form>
+        {% endif %}
+        {% if not item['is_read'] %}
+        <form method="post" action="{{ url_for('notifications.mark_read', notification_id=item['id']) }}">
+          <button type="submit" class="btn btn--ghost btn--sm">Mark as read</button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <span class="empty-icon">{{ icon('bell', 26) }}</span>
+  <h2>No notifications</h2>
+  <p>Order updates and account messages will appear here.</p>
+  <a class="btn btn--primary" href="{{ url_for('shop.products') }}">Browse products</a>
+</div>
+{% endif %}
+{% endblock %}

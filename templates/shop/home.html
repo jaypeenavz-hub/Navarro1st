@@ -1,0 +1,106 @@
+{% extends "layout.html" %}
+{% from "partials/icons.html" import icon, product_image %}
+{% from "partials/product_card.html" import product_card %}
+{% block title %}ByteBodega · Gadgets for IT students{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="hero-copy">
+    <span class="pill pill--soft">{{ icon('sparkles', 15) }} Built for IT students</span>
+    <h1>The gadget shelf built for IT students.</h1>
+    <p class="hero-lede">
+      Laptops, monitors, mechanical keyboards and dev boards — the gear you actually use
+      in labs, hackathons and late-night build sessions. Real stock, honest peso prices.
+    </p>
+    <div class="hero-actions">
+      <a class="btn btn--primary btn--lg" href="{{ url_for('shop.products') }}">
+        Shop all products {{ icon('arrow-right', 17) }}
+      </a>
+      <a class="btn btn--outline btn--lg" href="{{ url_for('shop.categories') }}">Browse categories</a>
+    </div>
+    <dl class="hero-stats">
+      <div><dt>{{ stats['products'] }}</dt><dd>Products in stock</dd></div>
+      <div><dt>{{ stats['categories'] }}</dt><dd>Gadget categories</dd></div>
+      <div><dt>Free</dt><dd>Shipping over ₱2,500</dd></div>
+    </dl>
+  </div>
+
+  <div class="hero-visual">
+    {% for item in hero_products %}
+    <figure class="hero-card">
+      {{ product_image(item['image'], item['name']) }}
+      <figcaption>
+        <span>{{ item['category_name'] }}</span>
+        <strong>{{ item['name'] }}</strong>
+        {% if loop.first %}<em>{{ item['price']|money }}</em>{% endif %}
+      </figcaption>
+    </figure>
+    {% endfor %}
+    <p class="hero-trust">{{ icon('shield', 16) }} Secure checkout · Cash on Delivery · GCash</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">Categories</p>
+      <h2>Shop by category</h2>
+    </div>
+    <a class="link-arrow" href="{{ url_for('shop.categories') }}">All categories {{ icon('chevron-right', 15) }}</a>
+  </div>
+  <div class="category-strip">
+    {% for category in categories %}
+    <a class="category-tile" href="{{ url_for('shop.products', category=category['slug']) }}">
+      <span class="category-icon">{{ icon(category['icon'], 22) }}</span>
+      <span class="category-name">{{ category['name'] }}</span>
+      <span class="category-count">{{ category['product_count'] }} items</span>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">Top rated</p>
+      <h2>Loved by IT students</h2>
+    </div>
+    <a class="link-arrow" href="{{ url_for('shop.products', sort='rating') }}">See all {{ icon('chevron-right', 15) }}</a>
+  </div>
+  <div class="product-grid">
+    {% for product in featured %}
+      {{ product_card(product, wishlist) }}
+    {% endfor %}
+  </div>
+</section>
+
+<section class="feature-banner">
+  <div class="feature-banner-copy">
+    <p class="eyebrow eyebrow--light">Delivery &amp; payment</p>
+    <h2>Free nationwide shipping over ₱2,500</h2>
+    <p>Metro Manila orders arrive in 1–2 days, provincial orders in 3–5. Pay with Cash on Delivery or
+       GCash — whichever is easier while you are on a student budget.</p>
+    <a class="btn btn--light" href="{{ url_for('shop.products') }}">Start shopping {{ icon('arrow-right', 16) }}</a>
+  </div>
+  <div class="feature-banner-items">
+    <div class="feature-item">{{ icon('truck', 20) }}<strong>1–2 day delivery</strong><span>Metro Manila</span></div>
+    <div class="feature-item">{{ icon('card', 20) }}<strong>COD &amp; GCash</strong><span>Flexible payment</span></div>
+    <div class="feature-item">{{ icon('refresh', 20) }}<strong>7-day returns</strong><span>On damaged items</span></div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">Just arrived</p>
+      <h2>New this week</h2>
+    </div>
+    <a class="link-arrow" href="{{ url_for('shop.products', sort='newest') }}">See all {{ icon('chevron-right', 15) }}</a>
+  </div>
+  <div class="product-grid product-grid--four">
+    {% for product in new_arrivals %}
+      {{ product_card(product, wishlist) }}
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

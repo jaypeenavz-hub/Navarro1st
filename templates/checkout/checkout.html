@@ -1,0 +1,113 @@
+{% extends "layout.html" %}
+{% from "partials/icons.html" import icon, product_image %}
+{% block title %}Checkout · ByteBodega{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{{ url_for('cart.view_cart') }}">Cart</a>
+  {{ icon('chevron-right', 13) }}<span>Checkout</span>
+</nav>
+
+<div class="page-head">
+  <div>
+    <h1>Checkout</h1>
+    <p class="page-sub">Confirm your details and choose how you would like to pay.</p>
+  </div>
+</div>
+
+<form method="post" class="checkout-layout" novalidate>
+  <div class="checkout-form">
+    <section class="panel">
+      <header class="panel-head">
+        <h2>{{ icon('user', 18) }} Customer information</h2>
+      </header>
+      <div class="field-grid">
+        <label class="field">
+          <span class="field-label">Full name</span>
+          <input class="input" type="text" name="full_name" value="{{ form['full_name'] }}" required>
+        </label>
+        <label class="field">
+          <span class="field-label">Contact number</span>
+          <input class="input" type="tel" name="phone" value="{{ form['phone'] }}"
+                 placeholder="0917 555 0142" required>
+        </label>
+      </div>
+      <label class="field">
+        <span class="field-label">Delivery address</span>
+        <input class="input" type="text" name="address" value="{{ form['address'] }}"
+               placeholder="House number, street, barangay, landmark" required>
+      </label>
+      <div class="field-grid field-grid--three">
+        <label class="field">
+          <span class="field-label">City / municipality</span>
+          <input class="input" type="text" name="city" value="{{ form['city'] }}" required>
+        </label>
+        <label class="field">
+          <span class="field-label">Province</span>
+          <input class="input" type="text" name="province" value="{{ form['province'] }}" required>
+        </label>
+        <label class="field">
+          <span class="field-label">Postal code</span>
+          <input class="input" type="text" name="postal_code" value="{{ form['postal_code'] }}"
+                 inputmode="numeric" maxlength="4" required>
+        </label>
+      </div>
+      <label class="field">
+        <span class="field-label">Delivery notes <span class="field-optional">(optional)</span></span>
+        <textarea class="input" name="notes" rows="2"
+                  placeholder="Gate code, preferred delivery time, landmarks">{{ form['notes'] }}</textarea>
+      </label>
+    </section>
+
+    <section class="panel">
+      <header class="panel-head">
+        <h2>{{ icon('card', 18) }} Payment method</h2>
+      </header>
+      <div class="payment-options">
+        <label class="payment-option">
+          <input type="radio" name="payment_method" value="cod" {{ 'checked' if form['payment_method'] == 'cod' }}>
+          <span class="payment-body">
+            <strong>{{ icon('truck', 17) }} Cash on Delivery</strong>
+            <small>Pay the rider in cash once your parcel arrives.</small>
+          </span>
+        </label>
+        <label class="payment-option">
+          <input type="radio" name="payment_method" value="gcash" {{ 'checked' if form['payment_method'] == 'gcash' }}>
+          <span class="payment-body">
+            <strong>{{ icon('card', 17) }} GCash</strong>
+            <small>Demonstration only — no real money is transferred.</small>
+          </span>
+        </label>
+      </div>
+      <p class="payment-note">{{ icon('shield', 15) }} This demo records the payment reference for your order history.</p>
+    </section>
+  </div>
+
+  <aside class="summary-card summary-card--sticky">
+    <h2>Order summary</h2>
+    <ul class="summary-items">
+      {% for item in items %}
+      <li>
+        <span class="summary-thumb">{{ product_image(item['image'], item['name']) }}</span>
+        <span class="summary-item-copy">
+          <strong>{{ item['name'] }}</strong>
+          <small>{{ item['quantity'] }} × {{ item['price']|money }}</small>
+        </span>
+        <span class="summary-item-total">{{ item['line_total']|money }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+
+    <div class="summary-row"><span>Subtotal</span><strong>{{ totals['subtotal']|money }}</strong></div>
+    <div class="summary-row"><span>Shipping fee</span>
+      <strong>{{ 'Free' if totals['shipping'] == 0 else totals['shipping']|money }}</strong>
+    </div>
+    <div class="summary-total"><span>Total amount</span><strong>{{ totals['total']|money }}</strong></div>
+
+    <button type="submit" class="btn btn--primary btn--block btn--lg">
+      {{ icon('check', 16) }} Place order
+    </button>
+    <a class="btn btn--ghost btn--block" href="{{ url_for('cart.view_cart') }}">Back to cart</a>
+  </aside>
+</form>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends "auth/base.html" %}
+{% from "partials/icons.html" import icon %}
+{% block title %}Set a new password · ByteBodega{% endblock %}
+
+{% block form %}
+<div class="auth-head">
+  <h2>Set a new password</h2>
+  <p>Enter the 6-digit reset code for <strong>{{ email or 'your account' }}</strong> and choose a new password.</p>
+</div>
+
+{% if demo_code %}
+<div class="auth-note auth-note--code">
+  {{ icon('alert', 16) }}
+  <p>Demo mode — your reset code is <strong class="code">{{ demo_code }}</strong>. Enter it below.</p>
+</div>
+{% endif %}
+
+<form method="post" class="form-stack" novalidate>
+  <input type="hidden" name="email" value="{{ email }}">
+  <label class="field">
+    <span class="field-label">Reset code</span>
+    <span class="input-wrap">
+      {{ icon('shield', 17) }}
+      <input class="input" type="text" name="code" placeholder="6-digit code" inputmode="numeric"
+             maxlength="6" required>
+    </span>
+  </label>
+
+  <label class="field">
+    <span class="field-label">New password</span>
+    <span class="input-wrap">
+      {{ icon('lock', 17) }}
+      <input class="input" type="password" name="password" placeholder="At least 8 characters"
+             autocomplete="new-password" required data-password>
+      <button type="button" class="input-action" data-toggle-password aria-label="Show password">
+        <span data-eye-on>{{ icon('eye', 17) }}</span>
+        <span data-eye-off hidden>{{ icon('eye-off', 17) }}</span>
+      </button>
+    </span>
+  </label>
+
+  <label class="field">
+    <span class="field-label">Confirm new password</span>
+    <span class="input-wrap">
+      {{ icon('lock', 17) }}
+      <input class="input" type="password" name="confirm_password" placeholder="Repeat new password"
+             autocomplete="new-password" required data-password>
+      <button type="button" class="input-action" data-toggle-password aria-label="Show password">
+        <span data-eye-on>{{ icon('eye', 17) }}</span>
+        <span data-eye-off hidden>{{ icon('eye-off', 17) }}</span>
+      </button>
+    </span>
+  </label>
+
+  <button type="submit" class="btn btn--primary btn--block btn--lg">Update password</button>
+</form>
+
+<p class="auth-switch"><a href="{{ url_for('auth.forgot_password') }}">Request a new code</a></p>
+{% endblock %}

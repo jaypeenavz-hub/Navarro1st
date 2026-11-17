@@ -1,0 +1,106 @@
+{% extends "admin/base.html" %}
+{% from "partials/icons.html" import icon, product_image %}
+{% block title %}Products · ByteBodega Admin{% endblock %}
+{% block heading %}<h1>Products</h1>{% endblock %}
+
+{% block content %}
+<form class="filter-bar filter-bar--admin" method="get" action="{{ url_for('admin.products') }}">
+  <div class="filter-search">
+    {{ icon('search', 17) }}
+    <input type="search" name="q" value="{{ query }}" placeholder="Search products by name" aria-label="Search products">
+  </div>
+  <label class="filter-select">
+    <span>Category</span>
+    <select name="category" data-autosubmit>
+      <option value="">All categories</option>
+      {% for cat in categories %}
+      <option value="{{ cat['id'] }}" {{ 'selected' if category == cat['id']|string }}>{{ cat['name'] }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <button type="submit" class="btn btn--primary">{{ icon('filter', 16) }} Filter</button>
+  <a class="btn btn--ghost" href="{{ url_for('admin.products') }}">Reset</a>
+  <a class="btn btn--primary btn--push" href="{{ url_for('admin.product_new') }}">{{ icon('plus', 16) }} Add new product</a>
+</form>
+
+<section class="panel">
+  <header class="panel-head">
+    <h2>{{ pager['total'] }} product{{ '' if pager['total'] == 1 else 's' }}</h2>
+    <span class="muted">Page {{ pager['page'] }} of {{ pager['pages'] }}</span>
+  </header>
+
+  {% if products %}
+  <div class="table-wrap">
+    <table class="table table--products">
+      <thead>
+        <tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Rating</th><th>Status</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for product in products %}
+        <tr>
+          <td>
+            <div class="table-product">
+              <span class="table-thumb">{{ product_image(product['image'], product['name']) }}</span>
+              <div>
+                <strong>{{ product['name'] }}</strong>
+                <small>NV-{{ '%05d' % product['id'] }}</small>
+              </div>
+            </div>
+          </td>
+          <td>{{ product['category_name'] or '—' }}</td>
+          <td>{{ product['price']|money }}</td>
+          <td>
+            <span class="{{ 'text-danger' if product['stock'] <= 5 else '' }}">{{ product['stock'] }}</span>
+          </td>
+          <td>{{ '%.1f' % product['rating'] }} ★</td>
+          <td>
+            <span class="status status--{{ 'active' if product['is_active'] else 'inactive' }}">
+              {{ 'Visible' if product['is_active'] else 'Hidden' }}
+            </span>
+          </td>
+          <td>
+            <div class="table-actions">
+              <a class="btn btn--ghost btn--sm" href="{{ url_for('admin.product_edit', product_id=product['id']) }}">
+                {{ icon('edit', 14) }} Edit
+              </a>
+              <form method="post" action="{{ url_for('admin.product_toggle', product_id=product['id']) }}">
+                <button type="submit" class="btn btn--ghost btn--sm">
+                  {{ 'Hide' if product['is_active'] else 'Show' }}
+                </button>
+              </form>
+              <form method="post" action="{{ url_for('admin.product_delete', product_id=product['id']) }}">
+                <button type="submit" class="btn btn--ghost btn--sm btn--danger-ghost"
+                        data-confirm="Delete “{{ product['name'] }}” permanently?">
+                  {{ icon('trash', 14) }}
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if pager['pages'] > 1 %}
+  <nav class="pagination" aria-label="Pagination">
+    {% if pager['has_prev'] %}
+    <a class="page-btn" href="{{ url_for('admin.products', q=query, category=category, page=pager['page'] - 1) }}">Previous</a>
+    {% endif %}
+    <span class="page-num is-active">{{ pager['page'] }}</span>
+    {% if pager['has_next'] %}
+    <a class="page-btn" href="{{ url_for('admin.products', q=query, category=category, page=pager['page'] + 1) }}">Next</a>
+    {% endif %}
+  </nav>
+  {% endif %}
+
+  {% else %}
+  <div class="empty-state empty-state--compact">
+    <span class="empty-icon">{{ icon('package', 24) }}</span>
+    <h2>No products found</h2>
+    <p>Try another search, or add a new product to the catalogue.</p>
+    <a class="btn btn--primary" href="{{ url_for('admin.product_new') }}">Add product</a>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

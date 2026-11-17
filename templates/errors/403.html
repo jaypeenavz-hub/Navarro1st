@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+{% from "partials/icons.html" import icon %}
+{% block title %}Access denied · ByteBodega{% endblock %}
+
+{% block content %}
+<div class="empty-state">
+  <span class="empty-icon">{{ icon('lock', 26) }}</span>
+  <h2>Administrators only</h2>
+  <p>That page belongs to the admin dashboard. Log in with an administrator account to continue.</p>
+  <div class="empty-actions">
+    <a class="btn btn--primary" href="{{ url_for('shop.home') }}">Back to store</a>
+    <a class="btn btn--ghost" href="{{ url_for('auth.login') }}">Log in as admin</a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,118 @@
+{% extends "admin/base.html" %}
+{% from "partials/icons.html" import icon %}
+{% block title %}Dashboard · ByteBodega Admin{% endblock %}
+{% block heading %}<h1>Dashboard</h1>{% endblock %}
+
+{% block content %}
+<div class="stat-grid">
+  <article class="stat-card">
+    <span class="stat-icon">{{ icon('package', 20) }}</span>
+    <p>Total products</p>
+    <strong>{{ totals['products'] }}</strong>
+    <a href="{{ url_for('admin.products') }}">Manage catalogue {{ icon('chevron-right', 13) }}</a>
+  </article>
+  <article class="stat-card">
+    <span class="stat-icon">{{ icon('users', 20) }}</span>
+    <p>Total customers</p>
+    <strong>{{ totals['customers'] }}</strong>
+    <a href="{{ url_for('admin.customers') }}">View accounts {{ icon('chevron-right', 13) }}</a>
+  </article>
+  <article class="stat-card">
+    <span class="stat-icon">{{ icon('receipt', 20) }}</span>
+    <p>Total orders</p>
+    <strong>{{ totals['orders'] }}</strong>
+    <a href="{{ url_for('admin.orders') }}">Process orders {{ icon('chevron-right', 13) }}</a>
+  </article>
+  <article class="stat-card stat-card--accent">
+    <span class="stat-icon">{{ icon('chart', 20) }}</span>
+    <p>Total sales</p>
+    <strong>{{ totals['sales']|money }}</strong>
+    <a href="{{ url_for('admin.reports') }}">Sales report {{ icon('chevron-right', 13) }}</a>
+  </article>
+</div>
+
+<div class="admin-columns">
+  <section class="panel">
+    <header class="panel-head">
+      <h2>{{ icon('chart', 18) }} Last 7 days</h2>
+      <span class="muted">Non-cancelled sales</span>
+    </header>
+    <div class="chart">
+      {% for point in sales_series %}
+      <div class="chart-col">
+        <div class="chart-bar-wrap">
+          <span class="chart-value">{{ point['revenue']|money if point['revenue'] else '' }}</span>
+          <div class="chart-bar" style="height: {{ [point['height'], 3]|max }}%"></div>
+        </div>
+        <span class="chart-label">{{ point['label'] }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="panel">
+    <header class="panel-head"><h2>{{ icon('receipt', 18) }} Order pipeline</h2></header>
+    <ul class="pipeline">
+      {% for key, label in status_labels.items() %}
+      <li>
+        <span class="status status--{{ key }}">{{ label }}</span>
+        <strong>{{ status_counts[key] }}</strong>
+      </li>
+      {% endfor %}
+    </ul>
+    <a class="btn btn--ghost btn--block btn--sm" href="{{ url_for('admin.orders') }}">Open order manager</a>
+  </section>
+</div>
+
+<section class="panel">
+  <header class="panel-head">
+    <h2>{{ icon('receipt', 18) }} Recent orders</h2>
+    <a class="link-arrow" href="{{ url_for('admin.orders') }}">All orders {{ icon('chevron-right', 14) }}</a>
+  </header>
+  {% if recent_orders %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th>Order</th><th>Customer</th><th>Date</th><th>Total</th><th>Status</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for order in recent_orders %}
+        <tr>
+          <td><strong>{{ order['order_number'] }}</strong></td>
+          <td>{{ order['customer_name'] }}</td>
+          <td>{{ order['created_at']|date_ph }}</td>
+          <td>{{ order['total']|money }}</td>
+          <td><span class="status status--{{ order['status'] }}">{{ status_labels[order['status']] }}</span></td>
+          <td><a class="btn btn--ghost btn--sm" href="{{ url_for('admin.order_detail', order_id=order['id']) }}">View</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="muted">No orders yet. Place a test order from the storefront to see it here.</p>
+  {% endif %}
+</section>
+
+<section class="panel">
+  <header class="panel-head">
+    <h2>{{ icon('alert', 18) }} Low stock alerts</h2>
+    <a class="link-arrow" href="{{ url_for('admin.products') }}">Restock {{ icon('chevron-right', 14) }}</a>
+  </header>
+  {% if low_stock %}
+  <ul class="mini-list">
+    {% for product in low_stock %}
+    <li>
+      <div>
+        <strong>{{ product['name'] }}</strong>
+        <small>{{ product['stock'] }} left in stock</small>
+      </div>
+      <a class="btn btn--ghost btn--sm" href="{{ url_for('admin.product_edit', product_id=product['id']) }}">Edit</a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="muted">Every product has healthy stock levels.</p>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends "admin/base.html" %}
+{% from "partials/icons.html" import icon, product_image %}
+{% block title %}{{ 'Edit product' if product else 'New product' }} · ByteBodega Admin{% endblock %}
+{% block heading %}<h1>{{ 'Edit product' if product else 'Add new product' }}</h1>{% endblock %}
+
+{% block content %}
+<form method="post" enctype="multipart/form-data" class="panel form-panel" novalidate>
+  <div class="form-layout">
+    <div class="form-main">
+      <label class="field">
+        <span class="field-label">Product name</span>
+        <input class="input" type="text" name="name" value="{{ values.get('name', '') }}"
+               placeholder="e.g. Sony WH-1000XM5 Wireless Headphones" required>
+      </label>
+
+      <label class="field">
+        <span class="field-label">Description</span>
+        <textarea class="input" name="description" rows="4" required
+                  placeholder="What makes this product worth buying?">{{ values.get('description', '') }}</textarea>
+      </label>
+
+      <div class="field-grid field-grid--three">
+        <label class="field">
+          <span class="field-label">Price (₱)</span>
+          <input class="input" type="number" name="price" step="0.01" min="0"
+                 value="{{ values.get('price', '') }}" required>
+        </label>
+        <label class="field">
+          <span class="field-label">Stock</span>
+          <input class="input" type="number" name="stock" min="0" value="{{ values.get('stock', '') }}" required>
+        </label>
+        <label class="field">
+          <span class="field-label">Category</span>
+          <select class="input" name="category_id" required>
+            <option value="">Choose category</option>
+            {% for cat in categories %}
+            <option value="{{ cat['id'] }}" {{ 'selected' if values.get('category_id') == cat['id']|string }}>
+              {{ cat['name'] }}
+            </option>
+            {% endfor %}
+          </select>
+        </label>
+      </div>
+
+      <div class="field-grid field-grid--three">
+        <label class="field">
+          <span class="field-label">Rating (0–5)</span>
+          <input class="input" type="number" name="rating" step="0.1" min="0" max="5"
+                 value="{{ values.get('rating', '0') }}">
+        </label>
+        <label class="field">
+          <span class="field-label">Review count</span>
+          <input class="input" type="number" name="rating_count" min="0"
+                 value="{{ values.get('rating_count', '0') }}">
+        </label>
+        <label class="field">
+          <span class="field-label">Badge <span class="field-optional">(optional)</span></span>
+          <input class="input" type="text" name="badge" value="{{ values.get('badge', '') }}"
+                 placeholder="Best seller">
+        </label>
+      </div>
+    </div>
+
+    <aside class="form-side">
+      <div class="image-preview">
+        {% if product %}
+          {{ product_image(product['image'], product['name'], 'image-preview-img') }}
+        {% else %}
+          <img class="image-preview-img" src="{{ url_for('static', filename='img/placeholder.svg') }}" alt="Product image preview">
+        {% endif %}
+      </div>
+      <label class="field">
+        <span class="field-label">Upload photo</span>
+        <input class="input" type="file" name="image_file" accept="image/png,image/jpeg,image/webp">
+        <span class="field-hint">PNG, JPG or WEBP up to 6 MB.</span>
+      </label>
+      <label class="field">
+        <span class="field-label">Or image link</span>
+        <input class="input" type="text" name="image_url" value="{{ values.get('image_url', '') }}"
+               placeholder="img/products/example.jpg or https://…">
+      </label>
+      <p class="field-hint">{{ 'Leave both empty to keep the current photo.' if product else 'Upload a file or paste a link.' }}</p>
+    </aside>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="btn btn--primary">{{ icon('check', 16) }} {{ 'Save changes' if product else 'Create product' }}</button>
+    <a class="btn btn--ghost" href="{{ url_for('admin.products') }}">Cancel</a>
+    {% if product %}
+    <span class="muted form-meta">SKU NV-{{ '%05d' % product['id'] }} · slug {{ product['slug'] }}</span>
+    {% endif %}
+  </div>
+</form>
+{% endblock %}

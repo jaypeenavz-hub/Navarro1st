@@ -1,0 +1,102 @@
+{% extends "layout.html" %}
+{% from "partials/icons.html" import icon %}
+{% block title %}My profile · ByteBodega{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>My profile</h1>
+    <p class="page-sub">Keep your details current so deliveries arrive without a hitch.</p>
+  </div>
+</div>
+
+<div class="profile-layout">
+  <section class="panel">
+    <header class="panel-head"><h2>{{ icon('user', 18) }} Personal information</h2></header>
+    <form method="post" class="form-stack" novalidate>
+      <div class="field-grid">
+        <label class="field">
+          <span class="field-label">Full name</span>
+          <input class="input" type="text" name="full_name" value="{{ form['full_name'] }}" required>
+        </label>
+        <label class="field">
+          <span class="field-label">Username</span>
+          <input class="input" type="text" name="username" value="{{ form['username'] }}" required>
+        </label>
+      </div>
+      <div class="field-grid">
+        <label class="field">
+          <span class="field-label">Email address</span>
+          <input class="input" type="email" name="email" value="{{ form['email'] }}" required>
+        </label>
+        <label class="field">
+          <span class="field-label">Contact number</span>
+          <input class="input" type="tel" name="phone" value="{{ form['phone'] }}" placeholder="0917 555 0142">
+        </label>
+      </div>
+
+      <h3 class="form-section-title">{{ icon('truck', 16) }} Delivery address</h3>
+      <label class="field">
+        <span class="field-label">Street address</span>
+        <input class="input" type="text" name="address" value="{{ form['address'] }}"
+               placeholder="House number, street, barangay">
+      </label>
+      <div class="field-grid field-grid--three">
+        <label class="field">
+          <span class="field-label">City / municipality</span>
+          <input class="input" type="text" name="city" value="{{ form['city'] }}">
+        </label>
+        <label class="field">
+          <span class="field-label">Province</span>
+          <input class="input" type="text" name="province" value="{{ form['province'] }}">
+        </label>
+        <label class="field">
+          <span class="field-label">Postal code</span>
+          <input class="input" type="text" name="postal_code" value="{{ form['postal_code'] }}"
+                 inputmode="numeric" maxlength="4">
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn--primary">{{ icon('check', 16) }} Save changes</button>
+        <a class="btn btn--ghost" href="{{ url_for('profile.index') }}">Reset</a>
+      </div>
+    </form>
+  </section>
+
+  <aside class="profile-aside">
+    <section class="panel profile-card">
+      <span class="avatar avatar--lg">{{ form['full_name']|initials }}</span>
+      <h2>{{ form['full_name'] }}</h2>
+      <p class="muted">@{{ form['username'] }}</p>
+      {% if order_row is defined %}
+      <div class="profile-stats">
+        <div><strong>{{ order_row['total'] }}</strong><span>Orders</span></div>
+        <div><strong>{{ order_row['spent']|money }}</strong><span>Lifetime spend</span></div>
+      </div>
+      {% endif %}
+      <a class="btn btn--ghost btn--block" href="{{ url_for('orders.history') }}">View my orders</a>
+    </section>
+
+    <section class="panel">
+      <header class="panel-head"><h2>{{ icon('lock', 18) }} Change password</h2></header>
+      <form method="post" action="{{ url_for('profile.change_password') }}" class="form-stack" novalidate>
+        <label class="field">
+          <span class="field-label">Current password</span>
+          <input class="input" type="password" name="current_password" required autocomplete="current-password">
+        </label>
+        <label class="field">
+          <span class="field-label">New password</span>
+          <input class="input" type="password" name="new_password" required autocomplete="new-password"
+                 placeholder="At least 8 characters">
+        </label>
+        <label class="field">
+          <span class="field-label">Confirm new password</span>
+          <input class="input" type="password" name="confirm_password" required autocomplete="new-password">
+        </label>
+        <button type="submit" class="btn btn--primary btn--block">Update password</button>
+      </form>
+    </section>
+  </aside>
+</div>
+{% endblock %}

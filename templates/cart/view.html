@@ -1,0 +1,109 @@
+{% extends "layout.html" %}
+{% from "partials/icons.html" import icon, product_image %}
+{% block title %}Your cart · ByteBodega{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Your cart</h1>
+    <p class="page-sub">{{ totals['count'] }} item{{ '' if totals['count'] == 1 else 's' }} ready for checkout</p>
+  </div>
+  <a class="btn btn--ghost" href="{{ url_for('shop.products') }}">{{ icon('chevreft', 15) }} Continue shopping</a>
+</div>
+
+{% if items %}
+<div class="cart-layout">
+  <div class="cart-list">
+    {% for item in items %}
+    <article class="cart-row">
+      <a class="cart-thumb" href="{{ url_for('shop.product_detail', slug=item['slug']) }}">
+        {{ product_image(item['image'], item['name']) }}
+      </a>
+
+      <div class="cart-info">
+        <span class="product-category">{{ item['category_name'] }}</span>
+        <h3><a href="{{ url_for('shop.product_detail', slug=item['slug']) }}">{{ item['name'] }}</a></h3>
+        <p class="muted">{{ item['price']|money }} each · {{ item['stock'] }} in stock</p>
+        <form method="post" action="{{ url_for('cart.remove_item', item_id=item['item_id']) }}">
+          <button type="submit" class="link-danger">{{ icon('trash', 14) }} Remove</button>
+        </form>
+      </div>
+
+      <div class="cart-controls">
+        <div class="qty-stepper qty-stepper--mini">
+          <form method="post" action="{{ url_for('cart.update_cart', item_id=item['item_id']) }}">
+            <input type="hidden" name="action" value="decrease">
+            <button type="submit" class="qty-btn" aria-label="Decrease quantity">{{ icon('minus', 14) }}</button>
+          </form>
+          <form method="post" action="{{ url_for('cart.update_cart', item_id=item['item_id']) }}">
+            <input type="hidden" name="action" value="set">
+            <input class="qty-input" type="number" name="quantity" value="{{ item['quantity'] }}" min="1"
+                   max="{{ item['stock'] }}" aria-label="Quantity for {{ item['name'] }}"
+                   onchange="this.form.submit()">
+          </form>
+          <form method="post" action="{{ url_for('cart.update_cart', item_id=item['item_id']) }}">
+            <input type="hidden" name="action" value="increase">
+            <button type="submit" class="qty-btn" aria-label="Increase quantity">{{ icon('plus', 14) }}</button>
+          </form>
+        </div>
+        <span class="cart-line-total">{{ item['line_total']|money }}</span>
+      </div>
+    </article>
+    {% endfor %}
+
+    <div class="cart-list-footer">
+      <form method="post" action="{{ url_for('cart.clear_cart') }}">
+        <button type="submit" class="btn btn--ghost btn--sm" data-confirm="Remove every item from your cart?">
+          {{ icon('trash', 15) }} Clear cart
+        </button>
+      </form>
+      <a class="link-arrow" href="{{ url_for('shop.products') }}">Continue shopping {{ icon('chevron-right', 15) }}</a>
+    </div>
+  </div>
+
+  <aside class="summary-card">
+    <h2>Order summary</h2>
+
+    <div class="summary-row"><span>Subtotal</span><strong>{{ totals['subtotal']|money }}</strong></div>
+    <div class="summary-row"><span>Shipping fee</span>
+      <strong>{{ 'Free' if totals['shipping'] == 0 else totals['shipping']|money }}</strong>
+    </div>
+
+    {% if totals['free_shipping_gap'] > 0 %}
+    <p class="shipping-hint">
+      {{ icon('truck', 15) }} Add {{ totals['free_shipping_gap']|money }} more for free shipping.
+    </p>
+    {% else %}
+    <p class="shipping-hint shipping-hint--ok">{{ icon('check', 15) }} You have unlocked free shipping.</p>
+    {% endif %}
+
+    <div class="summary-total">
+      <span>Total</span>
+      <strong>{{ totals['total']|money }}</strong>
+    </div>
+
+    <a class="btn btn--primary btn--block btn--lg" href="{{ url_for('checkout.checkout') }}">
+      Proceed to checkout {{ icon('arrow-right', 16) }}
+    </a>
+    <a class="btn btn--ghost btn--block" href="{{ url_for('shop.products') }}">Continue shopping</a>
+
+    <ul class="summary-notes">
+      <li>{{ icon('shield', 15) }} Password-protected account checkout</li>
+      <li>{{ icon('truck', 15) }} Delivered in 1–5 days nationwide</li>
+      <li>{{ icon('refresh', 15) }} Cancel while pending or processing</li>
+    </ul>
+  </aside>
+</div>
+
+{% else %}
+<div class="empty-state">
+  <span class="empty-icon">{{ icon('cart', 26) }}</span>
+  <h2>Your cart is empty</h2>
+  <p>Browse the catalogue and add something you will actually use.</p>
+  <div class="empty-actions">
+    <a class="btn btn--primary" href="{{ url_for('shop.products') }}">Start shopping</a>
+    <a class="btn btn--ghost" href="{{ url_for('cart.wishlist') }}">View wishlist</a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+instance/
+.venv/
+venv/
+static/uploads/products/*
+!static/uploads/products/.gitkeep
+.vscode/settings.json.bak
+
+screenshots/
+server.log

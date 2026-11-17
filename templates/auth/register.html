@@ -1,0 +1,75 @@
+{% extends "auth/base.html" %}
+{% from "partials/icons.html" import icon %}
+{% block title %}Create account · ByteBodega{% endblock %}
+
+{% block form %}
+<div class="auth-head">
+  <h2>Create your account</h2>
+  <p>It takes a minute. Your cart, wishlist and orders stay saved.</p>
+</div>
+
+<form method="post" class="form-stack" novalidate>
+  <label class="field">
+    <span class="field-label">Full name</span>
+    <span class="input-wrap">
+      {{ icon('user', 17) }}
+      <input class="input" type="text" name="full_name" value="{{ form.get('full_name', '') }}"
+             placeholder="Maria Santos" autocomplete="name" required>
+    </span>
+  </label>
+
+  <label class="field">
+    <span class="field-label">Username</span>
+    <span class="input-wrap">
+      {{ icon('tag', 17) }}
+      <input class="input" type="text" name="username" value="{{ form.get('username', '') }}"
+             placeholder="maria_santos" autocomplete="username" required minlength="3" maxlength="20">
+    </span>
+    <span class="field-hint">3–20 characters: letters, numbers, dot or underscore.</span>
+  </label>
+
+  <label class="field">
+    <span class="field-label">Email address</span>
+    <span class="input-wrap">
+      {{ icon('mail', 17) }}
+      <input class="input" type="email" name="email" value="{{ form.get('email', '') }}"
+             placeholder="maria@example.com" autocomplete="email" required>
+    </span>
+  </label>
+
+  <div class="field-grid">
+    <label class="field">
+      <span class="field-label">Password</span>
+      <span class="input-wrap">
+        {{ icon('lock', 17) }}
+        <input class="input" type="password" name="password" placeholder="At least 8 characters"
+               autocomplete="new-password" required data-password>
+        <button type="button" class="input-action" data-toggle-password aria-label="Show password">
+          <span data-eye-on>{{ icon('eye', 17) }}</span>
+          <span data-eye-off hidden>{{ icon('eye-off', 17) }}</span>
+        </button>
+      </span>
+    </label>
+
+    <label class="field">
+      <span class="field-label">Confirm password</span>
+      <span class="input-wrap">
+        {{ icon('lock', 17) }}
+        <input class="input" type="password" name="confirm_password" placeholder="Repeat password"
+               autocomplete="new-password" required data-password>
+        <button type="button" class="input-action" data-toggle-password aria-label="Show password">
+          <span data-eye-on>{{ icon('eye', 17) }}</span>
+          <span data-eye-off hidden>{{ icon('eye-off', 17) }}</span>
+        </button>
+      </span>
+    </label>
+  </div>
+  <span class="field-hint">Use at least 8 characters with letters and numbers.</span>
+
+  <button type="submit" class="btn btn--primary btn--block btn--lg">Register</button>
+</form>
+
+<p class="auth-switch">
+  Already have an account? <a href="{{ url_for('auth.login') }}">Log in</a>
+</p>
+{% endblock %}

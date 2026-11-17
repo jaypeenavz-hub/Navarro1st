@@ -1,0 +1,46 @@
+{% extends "layout.html" %}
+{% from "partials/icons.html" import icon, product_image %}
+{% block title %}Categories · ByteBodega{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{{ url_for('shop.home') }}">Home</a>
+  {{ icon('chevron-right', 13) }}<span>Categories</span>
+</nav>
+
+<div class="page-head">
+  <div>
+    <h1>Browse categories</h1>
+    <p class="page-sub">Seven categories of gear an IT student actually needs.</p>
+  </div>
+</div>
+
+<div class="category-grid">
+  {% for category in categories %}
+  <article class="category-card">
+    <header>
+      <span class="category-icon category-icon--lg">{{ icon(category['icon'], 24) }}</span>
+      <div>
+        <h2>{{ category['name'] }}</h2>
+        <p>{{ category['description'] }}</p>
+      </div>
+    </header>
+
+    <div class="category-thumbs">
+      {% for product in showcase[category['slug']] %}
+      <a href="{{ url_for('shop.product_detail', slug=product['slug']) }}" title="{{ product['name'] }}">
+        {{ product_image(product['image'], product['name']) }}
+      </a>
+      {% endfor %}
+    </div>
+
+    <footer>
+      <span class="muted">{{ category['product_count'] }} products</span>
+      <a class="btn btn--ghost btn--sm" href="{{ url_for('shop.products', category=category['slug']) }}">
+        Explore {{ icon('chevron-right', 15) }}
+      </a>
+    </footer>
+  </article>
+  {% endfor %}
+</div>
+{% endblock %}

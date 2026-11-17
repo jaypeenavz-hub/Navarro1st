@@ -1,0 +1,84 @@
+{% extends "admin/base.html" %}
+{% from "partials/icons.html" import icon, product_image %}
+{% block title %}Order {{ order['order_number'] }} · ByteBodega Admin{% endblock %}
+{% block heading %}<h1>Order {{ order['order_number'] }}</h1>{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{{ url_for('admin.orders') }}">Orders</a>
+  {{ icon('chevron-right', 13) }}<span>{{ order['order_number'] }}</span>
+</nav>
+
+<div class="admin-columns admin-columns--wide">
+  <section class="panel">
+    <header class="panel-head">
+      <h2>{{ icon('package', 18) }} Items</h2>
+      <span class="status status--{{ order['status'] }}">{{ status_labels[order['status']] }}</span>
+    </header>
+    <ul class="summary-items">
+      {% for item in items %}
+      <li>
+        <span class="summary-thumb">{{ product_image(item['image'], item['name']) }}</span>
+        <span class="summary-item-copy">
+          <strong>{{ item['name'] }}</strong>
+          <small>{{ item['quantity'] }} × {{ item['price']|money }}</small>
+        </span>
+        <span class="summary-item-total">{{ (item['price'] * item['quantity'])|money }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    <div class="summary-row"><span>Subtotal</span><strong>{{ order['subtotal']|money }}</strong></div>
+    <div class="summary-row"><span>Shipping fee</span>
+      <strong>{{ 'Free' if order['shipping_fee'] == 0 else order['shipping_fee']|money }}</strong>
+    </div>
+    <div class="summary-total"><span>Total</span><strong>{{ order['total']|money }}</strong></div>
+  </section>
+
+  <aside class="panel">
+    <header class="panel-head"><h2>{{ icon('users', 18) }} Customer</h2></header>
+    <dl class="detail-meta detail-meta--stack">
+      <div><dt>Name</dt><dd>{{ order['customer_name'] }} (@{{ order['username'] }})</dd></div>
+      <div><dt>Email</dt><dd>{{ order['email'] }}</dd></div>
+      <div><dt>Recipient</dt><dd>{{ order['full_name'] }}</dd></div>
+      <div><dt>Contact</dt><dd>{{ order['phone'] }}</dd></div>
+      <div><dt>Address</dt><dd>{{ order['address'] }}, {{ order['city'] }}, {{ order['province'] }} {{ order['postal_code'] }}</dd></div>
+      {% if order['notes'] %}<div><dt>Notes</dt><dd>{{ order['notes'] }}</dd></div>{% endif %}
+      <div><dt>Payment</dt><dd>{{ 'GCash (demo)' if order['payment_method'] == 'gcash' else 'Cash on Delivery' }}</dd></div>
+      {% if transaction %}
+      <div><dt>Reference</dt><dd>{{ transaction['reference'] }}</dd></div>
+      <div><dt>Payment status</dt><dd>{{ transaction['status']|capitalize }}</dd></div>
+      {% endif %}
+      <div><dt>Placed</dt><dd>{{ order['created_at']|datetime_ph }}</dd></div>
+      <div><dt>Last update</dt><dd>{{ order['updated_at']|datetime_ph }}</dd></div>
+    </dl>
+  </aside>
+</div>
+
+<section class="panel">
+  <header class="panel-head"><h2>{{ icon('refresh', 18) }} Update order status</h2></header>
+  {% if next_statuses %}
+  <form method="post" action="{{ url_for('admin.order_status', order_id=order['id']) }}" class="inline-form-row">
+    <label class="field">
+      <span class="field-label">New status</span>
+      <select class="input" name="status" required>
+        {% for key in next_statuses %}
+        <option value="{{ key }}" {{ 'selected' if key == 'processing' }}>{{ status_labels[key] }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <button type="submit" class="btn btn--primary">{{ icon('check', 16) }} Apply status</button>
+  </form>
+  <p class="field-hint">
+    Allowed transitions from {{ status_labels[order['status']] }}:
+    {% for key in next_statuses %}{{ status_labels[key] }}{{ ', ' if not loop.last }}{% endfor %}.
+    The customer is notified automatically.
+  </p>
+  {% else %}
+  <p class="muted">
+    {{ status_labels[order['status']] }} is a final status, so no further changes are allowed.
+  </p>
+  {% endif %}
+</section>
+
+<a class="btn btn--ghost" href="{{ url_for('admin.orders') }}">{{ icon('chevreft', 15) }} Back to orders</a>
+{% endblock %}

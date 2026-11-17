@@ -1,0 +1,71 @@
+{% extends "admin/base.html" %}
+{% from "partials/icons.html" import icon %}
+{% block title %}Customers · ByteBodega Admin{% endblock %}
+{% block heading %}<h1>Customer accounts</h1>{% endblock %}
+
+{% block content %}
+<form class="filter-bar filter-bar--admin" method="get" action="{{ url_for('admin.customers') }}">
+  <div class="filter-search">
+    {{ icon('search', 17) }}
+    <input type="search" name="q" value="{{ query }}" placeholder="Search name, username or email" aria-label="Search customers">
+  </div>
+  <button type="submit" class="btn btn--primary">{{ icon('filter', 16) }} Search</button>
+  <a class="btn btn--ghost" href="{{ url_for('admin.customers') }}">Reset</a>
+</form>
+
+<section class="panel">
+  <header class="panel-head">
+    <h2>{{ customers|length }} customer{{ '' if customers|length == 1 else 's' }}</h2>
+    <span class="muted">Deactivated accounts cannot log in</span>
+  </header>
+
+  {% if customers %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th>Customer</th><th>Contact</th><th>Location</th><th>Orders</th><th>Spend</th><th>Status</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for customer in customers %}
+        <tr>
+          <td>
+            <div class="table-product">
+              <span class="avatar avatar--sm">{{ customer['full_name']|initials }}</span>
+              <div>
+                <strong>{{ customer['full_name'] }}</strong>
+                <small>@{{ customer['username'] }}</small>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="table-stack">
+              <span>{{ customer['email'] }}</span>
+              <small>{{ customer['phone'] or 'No phone saved' }}</small>
+            </div>
+          </td>
+          <td>{{ customer['city'] or '—' }}{% if customer['province'] %}, {{ customer['province'] }}{% endif %}</td>
+          <td>{{ customer['order_count'] }}</td>
+          <td>{{ customer['spent']|money }}</td>
+          <td>
+            <span class="status status--{{ 'active' if customer['is_active'] else 'inactive' }}">
+              {{ 'Active' if customer['is_active'] else 'Deactivated' }}
+            </span>
+          </td>
+          <td>
+            <form method="post" action="{{ url_for('admin.customer_toggle', user_id=customer['id']) }}">
+              <button type="submit" class="btn btn--ghost btn--sm"
+                      data-confirm="{{ 'Deactivate' if customer['is_active'] else 'Reactivate' }} {{ customer['full_name'] }}?">
+                {{ 'Deactivate' if customer['is_active'] else 'Reactivate' }}
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="muted">No customers match that search.</p>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,127 @@
+{% from "partials/icons.html" import icon %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}ByteBodega{% endblock %}</title>
+  <link rel="icon" href="{{ url_for('static', filename='img/favicon.svg') }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="{% block body_class %}app-body{% endblock %}">
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+    <a class="brand" href="{{ url_for('shop.home') }}">
+      <span class="brand-mark">B</span>
+      <span class="brand-text"><strong>ByteBodega</strong><small>IT student gadgets</small></span>
+    </a>
+
+    <nav class="nav">
+      <p class="nav-label">Shopping</p>
+      <a class="nav-link {{ 'is-active' if active_category in ['home', ''] }}" href="{{ url_for('shop.home') }}">
+        {{ icon('home') }}<span>Home</span>
+      </a>
+      <a class="nav-link {{ 'is-active' if active_category == 'shop' }}" href="{{ url_for('shop.products') }}">
+        {{ icon('shop') }}<span>Shop</span>
+      </a>
+      <a class="nav-link {{ 'is-active' if active_category == 'categories' }}" href="{{ url_for('shop.categories') }}">
+        {{ icon('categories') }}<span>Categories</span>
+      </a>
+
+      <p class="nav-label">My account</p>
+      <a class="nav-link {{ 'is-active' if active_category == 'cart' }}" href="{{ url_for('cart.view_cart') }}">
+        {{ icon('cart') }}<span>Cart</span>
+        {% if nav_cart_count %}<span class="nav-badge">{{ nav_cart_count }}</span>{% endif %}
+      </a>
+      <a class="nav-link {{ 'is-active' if active_category == 'wishlist' }}" href="{{ url_for('cart.wishlist') }}">
+        {{ icon('heart') }}<span>Wishlist</span>
+      </a>
+      <a class="nav-link {{ 'is-active' if active_category == 'orders' }}" href="{{ url_for('orders.history') }}">
+        {{ icon('receipt') }}<span>My orders</span>
+      </a>
+      <a class="nav-link {{ 'is-active' if active_category == 'profile' }}" href="{{ url_for('profile.index') }}">
+        {{ icon('user') }}<span>My profile</span>
+      </a>
+      <a class="nav-link {{ 'is-active' if active_category == 'notifications' }}" href="{{ url_for('notifications.index') }}">
+        {{ icon('bell') }}<span>Notifications</span>
+        {% if nav_unread_count %}<span class="nav-badge nav-badge--dot">{{ nav_unread_count }}</span>{% endif %}
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="promo-card">
+        {{ icon('truck', 20) }}
+        <div>
+          <strong>Free shipping</strong>
+          <p>On orders over ₱2,500</p>
+        </div>
+      </div>
+      <form method="post" action="{{ url_for('auth.logout') }}">
+        <button type="submit" class="nav-link nav-link--button">
+          {{ icon('logout') }}<span>Log out</span>
+        </button>
+      </form>
+    </div>
+  </aside>
+
+  <div class="sidebar-overlay" data-sidebar-close hidden></div>
+
+  <div class="app-main">
+    <header class="topbar">
+      <button type="button" class="icon-btn topbar-menu" data-sidebar-toggle aria-label="Open navigation">
+        {{ icon('menu', 20) }}
+      </button>
+
+      <form class="searchbar" action="{{ url_for('shop.products') }}" method="get" role="search">
+        {{ icon('search', 18) }}
+        <input type="search" name="q" placeholder="Search laptops, keyboards, dev boards and more"
+               value="{{ request.args.get('q', '') if request.endpoint in ['shop.products', 'shop.search'] else '' }}"
+               aria-label="Search products">
+        <button type="submit" class="searchbar-submit">Search</button>
+      </form>
+
+      <div class="topbar-actions">
+        <a class="icon-btn" href="{{ url_for('cart.wishlist') }}" aria-label="Wishlist">{{ icon('heart', 19) }}</a>
+        <a class="icon-btn icon-btn--badge" href="{{ url_for('notifications.index') }}" aria-label="Notifications">
+          {{ icon('bell', 19) }}
+          {% if nav_unread_count %}<span class="count">{{ nav_unread_count }}</span>{% endif %}
+        </a>
+        <a class="icon-btn icon-btn--badge" href="{{ url_for('cart.view_cart') }}" aria-label="Shopping cart">
+          {{ icon('cart', 19) }}
+          {% if nav_cart_count %}<span class="count">{{ nav_cart_count }}</span>{% endif %}
+        </a>
+        <a class="avatar-link" href="{{ url_for('profile.index') }}" title="{{ current_user['full_name'] if current_user }}">
+          <span class="avatar">{{ current_user['full_name']|initials if current_user else 'G' }}</span>
+        </a>
+      </div>
+    </header>
+
+    <main class="page">
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">
+      <p>© 2026 ByteBodega · Built with Flask &amp; SQLite</p>
+      <p class="site-footer-note">Prices in Philippine Peso (₱). Demo store for academic use.</p>
+    </footer>
+  </div>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="toast-stack" aria-live="polite">
+    {% for category, message in messages %}
+    <div class="toast toast--{{ category }}">
+      <span class="toast-icon">{{ icon('check' if category == 'success' else ('alert' if category == 'error' else 'bell'), 17) }}</span>
+      <p>{{ message }}</p>
+      <button type="button" class="toast-close" data-dismiss aria-label="Dismiss">{{ icon('close', 14) }}</button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+{% endwith %}
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

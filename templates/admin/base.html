@@ -1,0 +1,94 @@
+{% from "partials/icons.html" import icon %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Admin · ByteBodega{% endblock %}</title>
+  <link rel="icon" href="{{ url_for('static', filename='img/favicon.svg') }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="app-body admin-body">
+<div class="app-shell">
+  <aside class="sidebar sidebar--admin" id="sidebar" aria-label="Administrator navigation">
+    <a class="brand" href="{{ url_for('admin.dashboard') }}">
+      <span class="brand-mark brand-mark--admin">B</span>
+      <span class="brand-text"><strong>ByteBodega</strong><small>Admin console</small></span>
+    </a>
+
+    <nav class="nav">
+      <p class="nav-label">Overview</p>
+      <a class="nav-link {{ 'is-active' if admin_section == 'dashboard' }}" href="{{ url_for('admin.dashboard') }}">
+        {{ icon('chart') }}<span>Dashboard</span>
+      </a>
+      <a class="nav-link {{ 'is-active' if admin_section == 'reports' }}" href="{{ url_for('admin.reports') }}">
+        {{ icon('sliders') }}<span>Sales reports</span>
+      </a>
+
+      <p class="nav-label">Catalogue</p>
+      <a class="nav-link {{ 'is-active' if admin_section == 'products' }}" href="{{ url_for('admin.products') }}">
+        {{ icon('package') }}<span>Products</span>
+      </a>
+      <a class="nav-link {{ 'is-active' if admin_section == 'categories' }}" href="{{ url_for('admin.categories') }}">
+        {{ icon('categories') }}<span>Categories</span>
+      </a>
+
+      <p class="nav-label">Operations</p>
+      <a class="nav-link {{ 'is-active' if admin_section == 'orders' }}" href="{{ url_for('admin.orders') }}">
+        {{ icon('receipt') }}<span>Orders</span>
+      </a>
+      <a class="nav-link {{ 'is-active' if admin_section == 'customers' }}" href="{{ url_for('admin.customers') }}">
+        {{ icon('users') }}<span>Customers</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a class="nav-link" href="{{ url_for('shop.home') }}">{{ icon('store') }}<span>View storefront</span></a>
+      <form method="post" action="{{ url_for('auth.logout') }}">
+        <button type="submit" class="nav-link nav-link--button">{{ icon('logout') }}<span>Log out</span></button>
+      </form>
+    </div>
+  </aside>
+
+  <div class="sidebar-overlay" data-sidebar-close hidden></div>
+
+  <div class="app-main">
+    <header class="topbar topbar--admin">
+      <button type="button" class="icon-btn topbar-menu" data-sidebar-toggle aria-label="Open navigation">
+        {{ icon('menu', 20) }}
+      </button>
+      <div class="admin-title">
+        {% block heading %}<h1>Admin</h1>{% endblock %}
+      </div>
+      <div class="topbar-actions">
+        <span class="admin-user">
+          <span class="avatar avatar--sm">{{ current_user['full_name']|initials }}</span>
+          <span class="admin-user-copy"><strong>{{ current_user['full_name'] }}</strong><small>Administrator</small></span>
+        </span>
+        <a class="btn btn--ghost btn--sm" href="{{ url_for('shop.home') }}">{{ icon('store', 15) }} Storefront</a>
+      </div>
+    </header>
+
+    <main class="page">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="toast-stack" aria-live="polite">
+    {% for category, message in messages %}
+    <div class="toast toast--{{ category }}">
+      <span class="toast-icon">{{ icon('check' if category == 'success' else ('alert' if category == 'error' else 'bell'), 17) }}</span>
+      <p>{{ message }}</p>
+      <button type="button" class="toast-close" data-dismiss aria-label="Dismiss">{{ icon('close', 14) }}</button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+{% endwith %}
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

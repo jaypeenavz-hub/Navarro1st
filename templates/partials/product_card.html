@@ -1,0 +1,63 @@
+{% from "partials/icons.html" import product_image, stars, icon %}
+
+{% macro product_card(product, wishlist_ids, show_actions=True) %}
+<article class="product-card" data-product-id="{{ product['id'] }}">
+  <div class="product-media">
+    <a href="{{ url_for('shop.product_detail', slug=product['slug']) }}" class="product-media-link" aria-label="{{ product['name'] }}">
+      {{ product_image(product['image'], product['name']) }}
+    </a>
+    {% if product['badge'] %}<span class="chip chip--accent">{{ product['badge'] }}</span>{% endif %}
+    {% if product['stock'] == 0 %}
+      <span class="chip chip--muted product-stock-chip">Out of stock</span>
+    {% elif product['stock'] <= 5 %}
+      <span class="chip chip--warn product-stock-chip">Only {{ product['stock'] }} left</span>
+    {% endif %}
+    <form method="post" action="{{ url_for('cart.toggle_wishlist', product_id=product['id']) }}" class="wishlist-form">
+      <input type="hidden" name="next" value="{{ request.path }}">
+      <button type="submit" class="heart-btn {{ 'is-active' if product['id'] in wishlist_ids }}"
+              title="{{ 'Remove from wishlist' if product['id'] in wishlist_ids else 'Add to wishlist' }}"
+              aria-label="{{ 'Remove from wishlist' if product['id'] in wishlist_ids else 'Add to wishlist' }}">
+        {{ icon('heart', 18) }}
+      </button>
+    </form>
+  </div>
+
+  <div class="product-body">
+    <span class="product-category">{{ product['category_name'] or 'Uncategorised' }}</span>
+    <h3 class="product-name">
+      <a href="{{ url_for('shop.product_detail', slug=product['slug']) }}">{{ product['name'] }}</a>
+    </h3>
+    {{ stars(product['rating'], product['rating_count']) }}
+    <p class="product-desc">{{ product['description']|truncate(88, true, '…') }}</p>
+    <div class="product-price-row">
+      <span class="price">{{ product['price']|money }}</span>
+      <span class="stock-note {{ 'is-low' if product['stock'] <= 5 else '' }}">
+        {{ product['stock'] }} in stock
+      </span>
+    </div>
+  </div>
+
+  {% if show_actions %}
+  <div class="product-actions">
+    <form method="post" action="{{ url_for('cart.add_to_cart', product_id=product['id']) }}" class="product-action-form">
+      <input type="hidden" name="quantity" value="1">
+      <input type="hidden" name="next" value="{{ request.path }}">
+      <button type="submit" class="btn btn--primary btn--sm btn--block" {{ 'disabled' if product['stock'] == 0 }}>
+        {{ icon('cart', 16) }} Add to cart
+      </button>
+    </form>
+    <div class="product-actions-row">
+      <a class="btn btn--ghost btn--sm" href="{{ url_for('shop.product_detail', slug=product['slug']) }}">
+        Details {{ icon('chevron-right', 15) }}
+      </a>
+      <form method="post" action="{{ url_for('cart.toggle_wishlist', product_id=product['id']) }}" class="inline-form">
+        <input type="hidden" name="next" value="{{ request.path }}">
+        <button type="submit" class="btn btn--ghost btn--sm {{ 'is-on' if product['id'] in wishlist_ids }}">
+          {{ icon('heart', 15) }} {{ 'Saved' if product['id'] in wishlist_ids else 'Wishlist' }}
+        </button>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+</article>
+{% endmacro %}

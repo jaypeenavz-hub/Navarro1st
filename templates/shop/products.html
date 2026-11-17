@@ -1,0 +1,112 @@
+{% extends "layout.html" %}
+{% from "partials/icons.html" import icon %}
+{% from "partials/product_card.html" import product_card %}
+{% block title %}{{ active_category_name or ('Search: ' ~ query if query else 'All products') }} · ByteBodega{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{{ url_for('shop.home') }}">Home</a>
+  {{ icon('chevron-right', 13) }}
+  <a href="{{ url_for('shop.products') }}">Shop</a>
+  {% if active_category_name %}
+    {{ icon('chevron-right', 13) }}<span>{{ active_category_name }}</span>
+  {% endif %}
+</nav>
+
+<div class="page-head">
+  <div>
+    <h1>{{ active_category_name or ('Results for “' ~ query ~ '”' if query else 'All products') }}</h1>
+    <p class="page-sub">
+      {{ pager['total'] }} product{{ '' if pager['total'] == 1 else 's' }}
+      {% if query %}matching your search{% endif %}
+      · prices in Philippine Peso
+    </p>
+  </div>
+</div>
+
+<form class="filter-bar" method="get" action="{{ url_for('shop.products') }}">
+  {% if category %}<input type="hidden" name="category" value="{{ category }}">{% endif %}
+  <div class="filter-search">
+    {{ icon('search', 17) }}
+    <input type="search" name="q" value="{{ query }}" placeholder="Search within products" aria-label="Search products">
+  </div>
+
+  <label class="filter-select">
+    <span>Category</span>
+    <select name="category">
+      <option value="">All categories</option>
+      {% for cat in categories %}
+      <option value="{{ cat['slug'] }}" {{ 'selected' if category == cat['slug'] }}>{{ cat['name'] }}</option>
+      {% endfor %}
+    </select>
+  </label>
+
+  <label class="filter-select">
+    <span>Rating</span>
+    <select name="rating">
+      <option value="" {{ 'selected' if not min_rating }}>Any rating</option>
+      <option value="4" {{ 'selected' if min_rating == '4' }}>4 stars &amp; up</option>
+      <option value="3" {{ 'selected' if min_rating == '3' }}>3 stars &amp; up</option>
+      <option value="2" {{ 'selected' if min_rating == '2' }}>2 stars &amp; up</option>
+    </select>
+  </label>
+
+  <label class="filter-select">
+    <span>Sort by</span>
+    <select name="sort" data-autosubmit>
+      {% for key, option in sort_options.items() %}
+      <option value="{{ key }}" {{ 'selected' if sort_key == key }}>{{ option[0] }}</option>
+      {% endfor %}
+    </select>
+  </label>
+
+  <button type="submit" class="btn btn--primary">{{ icon('filter', 16) }} Apply</button>
+  {% if query or category or min_rating or sort_key != 'featured' %}
+    <a class="btn btn--ghost" href="{{ url_for('shop.products') }}">Reset</a>
+  {% endif %}
+</form>
+
+{% if products %}
+<div class="product-grid">
+  {% for product in products %}
+    {{ product_card(product, wishlist) }}
+  {% endfor %}
+</div>
+
+{% if pager['pages'] > 1 %}
+<nav class="pagination" aria-label="Pagination">
+  {% if pager['has_prev'] %}
+    <a class="page-btn" href="{{ url_for('shop.products', q=query, category=category, sort=sort_key, rating=min_rating, page=pager['page'] - 1) }}">
+      {{ icon('chevreft', 15) }} Previous
+    </a>
+  {% else %}
+    <span class="page-btn is-disabled">{{ icon('chevreft', 15) }} Previous</span>
+  {% endif %}
+
+  {% for number in range(1, pager['pages'] + 1) %}
+    <a class="page-num {{ 'is-active' if number == pager['page'] }}"
+       href="{{ url_for('shop.products', q=query, category=category, sort=sort_key, rating=min_rating, page=number) }}">{{ number }}</a>
+  {% endfor %}
+
+  {% if pager['has_next'] %}
+    <a class="page-btn" href="{{ url_for('shop.products', q=query, category=category, sort=sort_key, rating=min_rating, page=pager['page'] + 1) }}">
+      Next {{ icon('chevron-right', 15) }}
+    </a>
+  {% else %}
+    <span class="page-btn is-disabled">Next {{ icon('chevron-right', 15) }}</span>
+  {% endif %}
+</nav>
+{% endif %}
+
+{% else %}
+<div class="empty-state">
+  <span class="empty-icon">{{ icon('search', 26) }}</span>
+  <h2>No products found</h2>
+  <p>Try a different keyword, clear the filters, or browse another department.</p>
+  <div class="empty-actions">
+    <a class="btn btn--primary" href="{{ url_for('shop.products') }}">Clear filters</a>
+    <a class="btn btn--ghost" href="{{ url_for('shop.categories') }}">Browse categories</a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

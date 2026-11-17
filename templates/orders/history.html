@@ -1,0 +1,76 @@
+{% extends "layout.html" %}
+{% from "partials/icons.html" import icon, product_image %}
+{% block title %}My orders · ByteBodega{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>My orders</h1>
+    <p class="page-sub">Track deliveries, review past purchases and cancel eligible orders.</p>
+  </div>
+  <a class="btn btn--ghost" href="{{ url_for('shop.products') }}">{{ icon('chevreft', 15) }} Continue shopping</a>
+</div>
+
+<nav class="tab-bar" aria-label="Filter orders">
+  <a class="tab {{ 'is-active' if not status }}" href="{{ url_for('orders.history') }}">
+    All <span class="tab-count">{{ counts['all'] }}</span>
+  </a>
+  {% for key, label in status_labels.items() %}
+  <a class="tab {{ 'is-active' if status == key }}" href="{{ url_for('orders.history', status=key) }}">
+    {{ label }} <span class="tab-count">{{ counts[key] }}</span>
+  </a>
+  {% endfor %}
+</nav>
+
+{% if orders %}
+<div class="order-list">
+  {% for order in orders %}
+  <article class="order-card">
+    <header class="order-card-head">
+      <div>
+        <strong>{{ order['order_number'] }}</strong>
+        <span class="muted">{{ order['created_at']|datetime_ph }}</span>
+      </div>
+      <span class="status status--{{ order['status'] }}">{{ status_labels[order['status']] }}</span>
+    </header>
+
+    <div class="order-card-body">
+      <div class="order-thumbs">
+        {% for item in item_lookup[order['id']] %}
+        <span class="order-thumb">{{ product_image(item['image'], item['name']) }}</span>
+        {% endfor %}
+      </div>
+      <div class="order-meta">
+        <p><span class="muted">Total</span> <strong>{{ order['total']|money }}</strong></p>
+        <p><span class="muted">Payment</span> {{ 'GCash (demo)' if order['payment_method'] == 'gcash' else 'Cash on Delivery' }}</p>
+        <p><span class="muted">Ship to</span> {{ order['city'] }}, {{ order['province'] }}</p>
+      </div>
+    </div>
+
+    <footer class="order-card-foot">
+      <a class="btn btn--ghost btn--sm" href="{{ url_for('orders.detail', order_number=order['order_number']) }}">
+        View details {{ icon('chevron-right', 15) }}
+      </a>
+      {% if order['status'] in ['pending', 'processing'] %}
+      <form method="post" action="{{ url_for('orders.cancel', order_number=order['order_number']) }}">
+        <button type="submit" class="btn btn--danger btn--sm" data-confirm="Cancel this order? Items return to stock.">
+          Cancel order
+        </button>
+      </form>
+      {% endif %}
+    </footer>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <span class="empty-icon">{{ icon('receipt', 26) }}</span>
+  <h2>No orders yet</h2>
+  <p>{{ 'No orders with this status.' if status else 'When you place an order it will appear here.' }}</p>
+  <div class="empty-actions">
+    <a class="btn btn--primary" href="{{ url_for('shop.products') }}">Start shopping</a>
+    {% if status %}<a class="btn btn--ghost" href="{{ url_for('orders.history') }}">View all orders</a>{% endif %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

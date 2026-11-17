@@ -1,0 +1,29 @@
+{% extends "auth/base.html" %}
+{% from "partials/icons.html" import icon %}
+{% block title %}Forgot password · ByteBodega{% endblock %}
+
+{% block form %}
+<div class="auth-head">
+  <h2>Reset your password</h2>
+  <p>Enter the email address linked to your account and we will generate a reset code.</p>
+</div>
+
+<form method="post" class="form-stack" novalidate>
+  <label class="field">
+    <span class="field-label">Email address</span>
+    <span class="input-wrap">
+      {{ icon('mail', 17) }}
+      <input class="input" type="email" name="email" value="{{ email }}" placeholder="you@example.com"
+             autocomplete="email" required autofocus>
+    </span>
+  </label>
+  <button type="submit" class="btn btn--primary btn--block btn--lg">Generate reset code</button>
+</form>
+
+<div class="auth-note">
+  {{ icon('alert', 16) }}
+  <p>This is a local demo build with no mail server, so the code is displayed on the next screen instead of being emailed.</p>
+</div>
+
+<p class="auth-switch"><a href="{{ url_for('auth.login') }}">Back to login</a></p>
+{% endblock %}

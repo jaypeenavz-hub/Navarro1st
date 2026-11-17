@@ -1,0 +1,106 @@
+{% extends "admin/base.html" %}
+{% from "partials/icons.html" import icon %}
+{% block title %}Sales reports · ByteBodega Admin{% endblock %}
+{% block heading %}<h1>Sales reports</h1>{% endblock %}
+
+{% block content %}
+<div class="stat-grid stat-grid--three">
+  <article class="stat-card stat-card--accent">
+    <span class="stat-icon">{{ icon('chart', 20) }}</span>
+    <p>Gross sales</p>
+    <strong>{{ revenue|money }}</strong>
+    <span class="stat-foot">Excluding cancelled orders</span>
+  </article>
+  <article class="stat-card">
+    <span class="stat-icon">{{ icon('receipt', 20) }}</span>
+    <p>Orders counted</p>
+    <strong>{{ order_count }}</strong>
+    <span class="stat-foot">All paid, shipped and delivered orders</span>
+  </article>
+  <article class="stat-card">
+    <span class="stat-icon">{{ icon('tag', 20) }}</span>
+    <p>Average order value</p>
+    <strong>{{ average|money }}</strong>
+    <span class="stat-foot">Gross sales ÷ orders</span>
+  </article>
+</div>
+
+<section class="panel">
+  <header class="panel-head">
+    <h2>{{ icon('chart', 18) }} Monthly revenue</h2>
+    <span class="muted">Last 6 months with sales</span>
+  </header>
+  {% if monthly_series %}
+  <div class="chart chart--wide">
+    {% for point in monthly_series %}
+    <div class="chart-col">
+      <div class="chart-bar-wrap">
+        <span class="chart-value">{{ point['revenue']|money }}</span>
+        <div class="chart-bar" style="height: {{ [point['height'], 3]|max }}%"></div>
+      </div>
+      <span class="chart-label">{{ point['label'] }}</span>
+      <span class="chart-sublabel">{{ point['orders'] }} orders</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="muted">No sales recorded yet.</p>
+  {% endif %}
+</section>
+
+<div class="admin-columns">
+  <section class="panel">
+    <header class="panel-head"><h2>{{ icon('categories', 18) }} Revenue by category</h2></header>
+    {% if by_category %}
+    <ul class="metric-list">
+      {% for row in by_category %}
+      <li>
+        <div class="metric-head">
+          <strong>{{ row['category'] }}</strong>
+          <span>{{ row['revenue']|money }}</span>
+        </div>
+        <div class="bar"><i style="width: {{ (row['revenue'] * 100 / (by_category[0]['revenue'] or 1))|round(1) }}%"></i></div>
+        <span class="muted">{{ row['units'] }} unit{{ '' if row['units'] == 1 else 's' }} sold</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="muted">No items sold yet.</p>
+    {% endif %}
+  </section>
+
+  <section class="panel">
+    <header class="panel-head"><h2>{{ icon('package', 18) }} Best sellers</h2></header>
+    {% if top_products %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead><tr><th>Product</th><th>Units</th><th>Revenue</th></tr></thead>
+        <tbody>
+          {% for row in top_products %}
+          <tr>
+            <td>{{ row['name'] }}</td>
+            <td>{{ row['units'] }}</td>
+            <td>{{ row['revenue']|money }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="muted">No sales data yet.</p>
+    {% endif %}
+  </section>
+</div>
+
+<section class="panel">
+  <header class="panel-head"><h2>{{ icon('receipt', 18) }} Orders by status</h2></header>
+  <div class="status-cards">
+    {% for key, label in status_labels.items() %}
+    <div class="status-card">
+      <span class="status status--{{ key }}">{{ label }}</span>
+      <strong>{{ status_counts[key] }}</strong>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "admin/base.html" %}
+{% from "partials/icons.html" import icon %}
+{% block title %}Categories · ByteBodega Admin{% endblock %}
+{% block heading %}<h1>Manage categories</h1>{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <header class="panel-head"><h2>{{ icon('plus', 18) }} Add a category</h2></header>
+  <form method="post" class="inline-form-row" novalidate>
+    <label class="field">
+      <span class="field-label">Name</span>
+      <input class="input" type="text" name="name" placeholder="e.g. Sports and Outdoors" required>
+    </label>
+    <label class="field field--grow">
+      <span class="field-label">Description</span>
+      <input class="input" type="text" name="description" placeholder="One short line about this department">
+    </label>
+    <button type="submit" class="btn btn--primary">{{ icon('check', 16) }} Create category</button>
+  </form>
+</section>
+
+<section class="panel">
+  <header class="panel-head">
+    <h2>{{ categories|length }} categories</h2>
+    <span class="muted">Rename inline and press save</span>
+  </header>
+
+  <div class="admin-rows">
+    {% for category in categories %}
+    <form method="post" action="{{ url_for('admin.category_edit', category_id=category['id']) }}" class="admin-row">
+      <span class="category-icon">{{ icon(category['icon'], 18) }}</span>
+      <label class="field">
+        <span class="field-label">Name</span>
+        <input class="input" type="text" name="name" value="{{ category['name'] }}" required>
+      </label>
+      <label class="field field--grow">
+        <span class="field-label">Description</span>
+        <input class="input" type="text" name="description" value="{{ category['description'] }}">
+      </label>
+      <span class="admin-row-meta">{{ category['product_count'] }} product{{ '' if category['product_count'] == 1 else 's' }}</span>
+      <div class="admin-row-actions">
+        <button type="submit" class="btn btn--ghost btn--sm">{{ icon('check', 14) }} Save</button>
+      </div>
+    </form>
+    <div class="admin-row-footer">
+      <span class="muted">Slug: /shop?category={{ category['slug'] }}</span>
+      <form method="post" action="{{ url_for('admin.category_delete', category_id=category['id']) }}">
+        <button type="submit" class="btn btn--ghost btn--sm btn--danger-ghost"
+                data-confirm="Delete the “{{ category['name'] }}” category?">
+          {{ icon('trash', 14) }} Delete
+        </button>
+      </form>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

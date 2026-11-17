@@ -1,0 +1,61 @@
+{% extends "layout.html" %}
+{% from "partials/icons.html" import icon, product_image %}
+{% block title %}Order confirmed · ByteBodega{% endblock %}
+
+{% block content %}
+<section class="confirm-hero">
+  <span class="confirm-check">{{ icon('check', 30) }}</span>
+  <p class="eyebrow">Thank you for your order</p>
+  <h1>Order confirmed</h1>
+  <p class="page-sub">
+    Your order <strong>{{ order['order_number'] }}</strong> was placed on {{ order['created_at']|datetime_ph }}.
+    A confirmation is saved in your order history.
+  </p>
+  <div class="confirm-actions">
+    <a class="btn btn--primary" href="{{ url_for('orders.detail', order_number=order['order_number']) }}">
+      View order details {{ icon('arrow-right', 16) }}
+    </a>
+    <a class="btn btn--outline" href="{{ url_for('shop.products') }}">Continue shopping</a>
+  </div>
+</section>
+
+<div class="confirm-layout">
+  <section class="panel">
+    <header class="panel-head">
+      <h2>{{ icon('package', 18) }} Items in this order</h2>
+      <span class="pill pill--warn">{{ order['status']|capitalize }}</span>
+    </header>
+    <ul class="summary-items">
+      {% for item in items %}
+      <li>
+        <span class="summary-thumb">{{ product_image(item['image'], item['name']) }}</span>
+        <span class="summary-item-copy">
+          <strong>{{ item['name'] }}</strong>
+          <small>{{ item['quantity'] }} × {{ item['price']|money }}</small>
+        </span>
+        <span class="summary-item-total">{{ (item['price'] * item['quantity'])|money }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    <div class="summary-row"><span>Subtotal</span><strong>{{ order['subtotal']|money }}</strong></div>
+    <div class="summary-row"><span>Shipping fee</span>
+      <strong>{{ 'Free' if order['shipping_fee'] == 0 else order['shipping_fee']|money }}</strong>
+    </div>
+    <div class="summary-total"><span>Total amount</span><strong>{{ order['total']|money }}</strong></div>
+  </section>
+
+  <section class="panel">
+    <header class="panel-head"><h2>{{ icon('truck', 18) }} Delivery &amp; payment</h2></header>
+    <dl class="detail-meta detail-meta--stack">
+      <div><dt>Recipient</dt><dd>{{ order['full_name'] }}</dd></div>
+      <div><dt>Contact</dt><dd>{{ order['phone'] }}</dd></div>
+      <div><dt>Address</dt><dd>{{ order['address'] }}, {{ order['city'] }}, {{ order['province'] }} {{ order['postal_code'] }}</dd></div>
+      <div><dt>Payment</dt><dd>{{ 'GCash (demo)' if order['payment_method'] == 'gcash' else 'Cash on Delivery' }}</dd></div>
+      {% if transaction %}
+      <div><dt>Reference</dt><dd>{{ transaction['reference'] }} · {{ transaction['status']|capitalize }}</dd></div>
+      {% endif %}
+      {% if order['notes'] %}<div><dt>Notes</dt><dd>{{ order['notes'] }}</dd></div>{% endif %}
+    </dl>
+  </section>
+</div>
+{% endblock %}

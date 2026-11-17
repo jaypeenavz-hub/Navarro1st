@@ -1,0 +1,92 @@
+{% extends "layout.html" %}
+{% from "partials/icons.html" import icon, product_image %}
+{% block title %}Order {{ order['order_number'] }} · ByteBodega{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{{ url_for('orders.history') }}">My orders</a>
+  {{ icon('chevron-right', 13) }}<span>{{ order['order_number'] }}</span>
+</nav>
+
+<div class="page-head">
+  <div>
+    <h1>Order {{ order['order_number'] }}</h1>
+    <p class="page-sub">Placed {{ order['created_at']|datetime_ph }} · Updated {{ order['updated_at']|datetime_ph }}</p>
+  </div>
+  <span class="status status--{{ order['status'] }}">{{ status_labels[order['status']] }}</span>
+</div>
+
+{% if order['status'] == 'cancelled' %}
+<div class="callout callout--danger">
+  {{ icon('alert', 17) }}
+  <p>This order was cancelled. Items were returned to stock and any payment is marked for refund.</p>
+</div>
+{% else %}
+<div class="timeline">
+  {% set current_index = timeline.index(order['status']) if order['status'] in timeline else 0 %}
+  {% for step in timeline %}
+  <div class="timeline-step {{ 'is-done' if loop.index0 <= current_index }} {{ 'is-current' if loop.index0 == current_index }}">
+    <span class="timeline-dot">{{ icon('check', 13) if loop.index0 <= current_index else '' }}</span>
+    <div>
+      <strong>{{ status_labels[step] }}</strong>
+      <small>
+        {% if step == 'pending' %}Order received
+        {% elif step == 'processing' %}Being packed
+        {% elif step == 'shipped' %}On the way
+        {% else %}Delivered to you{% endif %}
+      </small>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="order-detail-layout">
+  <section class="panel">
+    <header class="panel-head"><h2>{{ icon('package', 18) }} Items</h2></header>
+    <ul class="summary-items">
+      {% for item in items %}
+      <li>
+        <span class="summary-thumb">{{ product_image(item['image'], item['name']) }}</span>
+        <span class="summary-item-copy">
+          <strong>{{ item['name'] }}</strong>
+          <small>{{ item['quantity'] }} × {{ item['price']|money }}</small>
+        </span>
+        <span class="summary-item-total">{{ (item['price'] * item['quantity'])|money }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+
+    <div class="summary-row"><span>Subtotal</span><strong>{{ order['subtotal']|money }}</strong></div>
+    <div class="summary-row"><span>Shipping fee</span>
+      <strong>{{ 'Free' if order['shipping_fee'] == 0 else order['shipping_fee']|money }}</strong>
+    </div>
+    <div class="summary-total"><span>Total amount</span><strong>{{ order['total']|money }}</strong></div>
+
+    {% if cancellable %}
+    <form method="post" action="{{ url_for('orders.cancel', order_number=order['order_number']) }}">
+      <button type="submit" class="btn btn--danger btn--block" data-confirm="Cancel this order? Items return to stock.">
+        {{ icon('close', 15) }} Cancel this order
+      </button>
+    </form>
+    <p class="field-hint">Orders can be cancelled while pending or processing.</p>
+    {% endif %}
+  </section>
+
+  <aside class="panel">
+    <header class="panel-head"><h2>{{ icon('truck', 18) }} Delivery &amp; payment</h2></header>
+    <dl class="detail-meta detail-meta--stack">
+      <div><dt>Recipient</dt><dd>{{ order['full_name'] }}</dd></div>
+      <div><dt>Contact</dt><dd>{{ order['phone'] }}</dd></div>
+      <div><dt>Address</dt><dd>{{ order['address'] }}, {{ order['city'] }}, {{ order['province'] }} {{ order['postal_code'] }}</dd></div>
+      <div><dt>Payment</dt><dd>{{ 'GCash (demo)' if order['payment_method'] == 'gcash' else 'Cash on Delivery' }}</dd></div>
+      {% if transaction %}
+      <div><dt>Reference</dt><dd>{{ transaction['reference'] }}</dd></div>
+      <div><dt>Payment status</dt><dd>{{ transaction['status']|capitalize }}</dd></div>
+      {% endif %}
+      {% if order['notes'] %}<div><dt>Notes</dt><dd>{{ order['notes'] }}</dd></div>{% endif %}
+    </dl>
+    <a class="btn btn--ghost btn--block" href="{{ url_for('orders.history') }}">{{ icon('chevreft', 15) }} Back to orders</a>
+  </aside>
+</div>
+{% endblock %}
